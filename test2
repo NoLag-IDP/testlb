@@ -1,0 +1,325 @@
+-- [ AUTO RANDOMIZE REMOVED VERSION - STEAL A BRAINROT COMPATIBLE ]
+
+-- Keep all your services and variables
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- Updated table for Steal a Brainrot Lucky Blocks with all your data
+local luckyBlockTable = {
+    ["Secret Lucky Block"] = { "Torrtuginni Dragonfrutini", "Pot Hotspot", "Esok Sekolah", "Spaghetti Tualetti", "La Secret Combinasion" },
+    ["Mythic Lucky Block"] = { "Spioniro Golubiro", "Tigrilini Watermelini", "Zibra Zubra Zibralini", "Carrotini Brainini", "Bananito Bandito" },
+    ["Brainrot God Lucky Block"] = { "Tigroligre Frutonni", "Orcalero Orcala", "Bulbito Bandito Traktorito", "Mastodontico Telepiedone", "Pop Pop Sahur" },
+    ["Admin Lucky Block"] = { "Carloo", "Alessio", "Los Bombinitos", "Crabbo Limonetta", "Blackhole Goat", "Guerriro Digitale", "67", "La Grande Combinasion" },
+    ["Taco Lucky Block"] = { "Chihuanini Taconini", "Gattito Tacoto", "Los Tipi Tacos", "Quesadilla Crocodila", "Burrito Bandito", "Los Nooo My Hotspotsitos" },
+    ["Los Lucky Blocks"] = { "Los Bombinitos", "Los Tungtungtungcitos", "Los Orcalitos", "Los Tipi Tacos", "Los Tortus", "Los Jobcitos", "Los Combinasionas", "Los 67" },
+    ["Los Taco Blocks"] = { "Los Chihuaninis", "Los Gattitos", "Los Cucurachas", "Los Quesdilos", "Los Burritos" },
+    ["Spooky Lucky Block"] = { "Mummy Ambalabu", "Cappucino Clownino", "Jackorilla", "Pumpkini Spyderini", "Trickolino", "Telemorte", "Los Spooky Combinasionas", "La Casa Boo" },
+    ["Festive Lucky Block"] = { "Reinito Sleighito", "La Ginger Sekolah", "Chimnino", "Los 25", "Santa Hotspot", "Triplito Tralaleritos", "Pandanini Frostini", "Chrismasmamat" },
+    ["Premium Festive Lucky Block"] = { "La Ginger Sekolah" } -- Added from your cheat script
+}
+
+local espEnabled = true
+local truePetMap = {}
+
+-- glitch effect
+local function glitchLabelEffect(label)
+    coroutine.wrap(function()
+        local original = label.TextColor3
+        for i = 1, 2 do
+            label.TextColor3 = Color3.new(1, 0, 0)
+            wait(0.07)
+            label.TextColor3 = original
+            wait(0.07)
+        end
+    end)()
+end
+
+-- ESP apply for Lucky Blocks
+local function applyBlockESP(luckyBlockModel, petName)
+    local existingLabel = luckyBlockModel:FindFirstChild("PetBillboard", true)
+    if existingLabel then existingLabel:Destroy() end
+    local existingHighlight = luckyBlockModel:FindFirstChild("ESPHighlight")
+    if existingHighlight then existingHighlight:Destroy() end
+    if not espEnabled then return end
+
+    local basePart = luckyBlockModel:FindFirstChildWhichIsA("BasePart") or luckyBlockModel.PrimaryPart
+    if not basePart then 
+        -- Try to find any part in the model
+        for _, part in ipairs(luckyBlockModel:GetChildren()) do
+            if part:IsA("BasePart") then
+                basePart = part
+                break
+            end
+        end
+        if not basePart then return end
+    end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "PetBillboard"
+    billboard.Size = UDim2.new(0, 270, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 4.5, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = 500
+    billboard.Parent = basePart
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = luckyBlockModel.Name .. " | " .. petName
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.TextStrokeTransparency = 0
+    label.TextScaled = true
+    label.Font = Enum.Font.FredokaOne
+    label.Parent = billboard
+
+    glitchLabelEffect(label)
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.FillColor = Color3.fromRGB(0, 200, 255)
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    highlight.FillTransparency = 0.7
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Adornee = luckyBlockModel
+    highlight.Parent = luckyBlockModel
+end
+
+-- Remove ESP
+local function removeBlockESP(luckyBlockModel)
+    local label = luckyBlockModel:FindFirstChild("PetBillboard", true)
+    if label then label:Destroy() end
+    local highlight = luckyBlockModel:FindFirstChild("ESPHighlight")
+    if highlight then highlight:Destroy() end
+end
+
+-- Collect nearby lucky blocks
+local function getPlayerLuckyBlocks(radius)
+    local blocks = {}
+    local char = player.Character or player.CharacterAdded:Wait()
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return blocks end
+
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        if obj:IsA("Model") and luckyBlockTable[obj.Name] then
+            local dist
+            local blockPosition
+            
+            if obj.PrimaryPart then
+                blockPosition = obj.PrimaryPart.Position
+            else
+                local firstPart = obj:FindFirstChildWhichIsA("BasePart")
+                if firstPart then
+                    blockPosition = firstPart.Position
+                else
+                    continue
+                end
+            end
+            
+            dist = (blockPosition - root.Position).Magnitude
+            if dist <= (radius or 60) then
+                if not truePetMap[obj] then
+                    local pets = luckyBlockTable[obj.Name]
+                    local chosen = pets[math.random(1, #pets)]
+                    truePetMap[obj] = chosen
+                end
+                table.insert(blocks, obj)
+            end
+        end
+    end
+    return blocks
+end
+
+-- Randomize manually
+local function randomizeNearbyBlocks()
+    local blocks = getPlayerLuckyBlocks(60)
+    for _, block in ipairs(blocks) do
+        local pets = luckyBlockTable[block.Name]
+        local chosen = pets[math.random(1, #pets)]
+        truePetMap[block] = chosen
+        applyBlockESP(block, chosen)
+    end
+    print("Randomized", #blocks, "lucky blocks.")
+end
+
+local function flashEffect(button)
+    local originalColor = button.BackgroundColor3
+    for i = 1, 3 do
+        button.BackgroundColor3 = Color3.new(1, 1, 1)
+        wait(0.05)
+        button.BackgroundColor3 = originalColor
+        wait(0.05)
+    end
+end
+
+local function countdownAndRandomize(button)
+    for i = 10, 1, -1 do
+        button.Text = "Randomizing in: " .. i
+        wait(1)
+    end
+    flashEffect(button)
+    randomizeNearbyBlocks()
+    button.Text = "Randomize Blocks"
+end
+
+-- GUI Setup
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "BrainrotBlockGui"
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 200) -- Increased height for additional button
+frame.Position = UDim2.new(0, 20, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+-- white outline
+local outline = Instance.new("UIStroke", frame)
+outline.Thickness = 2
+outline.Color = Color3.fromRGB(255, 255, 255)
+
+-- rounded corners
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 10)
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "🧠 Brainrot Revealer"
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextXAlignment = Enum.TextXAlignment.Center
+
+-- Dragging (supports touch & mouse)
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- Randomize button (rounded)
+local randomizeBtn = Instance.new("TextButton", frame)
+randomizeBtn.Size = UDim2.new(1, -20, 0, 35)
+randomizeBtn.Position = UDim2.new(0, 10, 0, 40)
+randomizeBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+randomizeBtn.Text = "Randomize Blocks"
+randomizeBtn.TextSize = 16
+randomizeBtn.Font = Enum.Font.FredokaOne
+randomizeBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", randomizeBtn).CornerRadius = UDim.new(1, 0)
+randomizeBtn.MouseButton1Click:Connect(function()
+    countdownAndRandomize(randomizeBtn)
+end)
+
+-- ESP toggle button
+local espToggleBtn = Instance.new("TextButton", frame)
+espToggleBtn.Size = UDim2.new(1, -20, 0, 30)
+espToggleBtn.Position = UDim2.new(0, 10, 0, 85)
+espToggleBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+espToggleBtn.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
+espToggleBtn.TextSize = 14
+espToggleBtn.Font = Enum.Font.FredokaOne
+espToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", espToggleBtn).CornerRadius = UDim.new(1, 0)
+espToggleBtn.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espToggleBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+    espToggleBtn.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
+    
+    local blocks = getPlayerLuckyBlocks(60)
+    for _, block in pairs(blocks) do
+        if espEnabled then
+            applyBlockESP(block, truePetMap[block])
+        else
+            removeBlockESP(block)
+        end
+    end
+end)
+
+-- Auto-ESP toggle button
+local autoEspEnabled = true
+local autoEspToggleBtn = Instance.new("TextButton", frame)
+autoEspToggleBtn.Size = UDim2.new(1, -20, 0, 30)
+autoEspToggleBtn.Position = UDim2.new(0, 10, 0, 125)
+autoEspToggleBtn.BackgroundColor3 = autoEspEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+autoEspToggleBtn.Text = "Auto-ESP: " .. (autoEspEnabled and "ON" or "OFF")
+autoEspToggleBtn.TextSize = 14
+autoEspToggleBtn.Font = Enum.Font.FredokaOne
+autoEspToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", autoEspToggleBtn).CornerRadius = UDim.new(1, 0)
+autoEspToggleBtn.MouseButton1Click:Connect(function()
+    autoEspEnabled = not autoEspEnabled
+    autoEspToggleBtn.BackgroundColor3 = autoEspEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+    autoEspToggleBtn.Text = "Auto-ESP: " .. (autoEspEnabled and "ON" or "OFF")
+end)
+
+-- Status label
+local statusLabel = Instance.new("TextLabel", frame)
+statusLabel.Size = UDim2.new(1, -20, 0, 20)
+statusLabel.Position = UDim2.new(0, 10, 1, -25)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Ready"
+statusLabel.Font = Enum.Font.GothamBold
+statusLabel.TextSize = 12
+statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+-- Auto-apply ESP to nearby blocks when game loads
+task.wait(3)
+
+-- Continuous block detection with auto-ESP toggle
+while true do
+    if autoEspEnabled then
+        local blocks = getPlayerLuckyBlocks(60)
+        for _, block in ipairs(blocks) do
+            if not truePetMap[block] then
+                local pets = luckyBlockTable[block.Name]
+                local chosen = pets[math.random(1, #pets)]
+                truePetMap[block] = chosen
+                if espEnabled then
+                    applyBlockESP(block, chosen)
+                end
+            elseif espEnabled and not block:FindFirstChild("ESPHighlight") then
+                applyBlockESP(block, truePetMap[block])
+            end
+        end
+    end
+    task.wait(1) -- Check every second
+end
