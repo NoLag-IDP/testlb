@@ -1,0 +1,691 @@
+-- [ AUTO RANDOMIZE REMOVED VERSION - STEAL A BRAINROT COMPATIBLE ]
+
+-- Keep all your services and variables
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- ==== EDIT CHANCES HERE ====
+local luckyBlockTable = {
+    ["Secret Lucky Block"] = {
+        {"Torrtuginni Dragonfrutini", 74.5},
+        {"Pot Hotspot", 21},
+        {"Esok Sekolah", 20},
+        {"Spaghetti Tualetti", 15},
+        {"La Secret Combinasion", 9}
+    },
+    ["Mythic Lucky Block"] = {
+        {"Spioniro Golubiro", 37},
+        {"Tigrilini Watermelini", 30},
+        {"Zibra Zubra Zibralini", 20},
+        {"Carrotini Brainini", 10},
+        {"Bananito Bandito", 3}
+    },
+    ["Brainrot God Lucky Block"] = {
+        {"Tigroligre Frutonni", 54},
+        {"Orcalero Orcala", 30},
+        {"Bulbito Bandito Traktorito", 10},
+        {"Mastodontico Telepiedone", 5},
+        {"Pop Pop Sahur", 1}
+    },
+    ["Admin Lucky Block"] = {
+        {"Carloo", 28},
+        {"Alessio", 20},
+        {"Los Bombinitos", 15},
+        {"Crabbo Limonetta", 15},
+        {"Blackhole Goat", 25},
+        {"Guerriro Digitale", 20},
+        {"67", 15},
+        {"La Grande Combinasion", 9}
+    },
+    ["Taco Lucky Block"] = {
+        {"Chihuanini Taconini", 50.5},
+        {"Gattito Tacoto", 35},
+        {"Los Tipi Tacos", 10},
+        {"Quesadilla Crocodila", 3},
+        {"Burrito Bandito", 3},
+        {"Los Nooo My Hotspotsitos", 1}
+    },
+    ["Los Lucky Blocks"] = {
+        {"Los Bombinitos", 40},
+        {"Los Tungtungtungcitos", 25},
+        {"Los Orcalitos", 15},
+        {"Los Tipi Tacos", 10},
+        {"Los Tortus", 25},
+        {"Los Jobcitos", 20},
+        {"Los Combinasionas", 15},
+        {"Los 67", 9}
+    },
+    ["Los Taco Blocks"] = {
+        {"Los Chihuaninis", 75},
+        {"Los Gattitos", 15},
+        {"Los Cucurachas", 6},
+        {"Los Quesdilos", 3.5},
+        {"Los Burritos", 0.5}
+    },
+    ["Spooky Lucky Block"] = {
+        {"Mummy Ambalabu", 32.7},
+        {"Cappucino Clownino", 32.5},
+        {"Jackorilla", 19.5},
+        {"Pumpkini Spyderini", 9},
+        {"Trickolino", 3},
+        {"Telemorte", 20},
+        {"Los Spooky Combinasionas", 15},
+        {"La Casa Boo", 9}
+    },
+    ["Festive Lucky Block"] = {
+        {"Reinito Sleighito", 9},
+        {"La Ginger Sekolah", 15},
+        {"Chimnino", 20},
+        {"Los 25", 25},
+        {"Santa Hotspot", 10},
+        {"Triplito Tralaleritos", 25},
+        {"Pandanini Frostini", 30},
+        {"Chrismasmamat", 30.9}
+    },
+    ["Premium Festive Lucky Block"] = {
+        {"NOT SUPPORTED WAIT FOR UPDATE!", 100}
+    }
+}
+-- ==== END OF CHANCE EDITING ====
+
+-- Function to select a pet based on weighted chances
+local function selectWeightedPet(blockType)
+    local pets = luckyBlockTable[blockType]
+    if not pets then 
+        return "Unknown Block"
+    end
+    
+    -- Validate pets table structure
+    if type(pets) ~= "table" or #pets == 0 then
+        return "Invalid Data"
+    end
+    
+    -- Calculate total weight safely
+    local totalWeight = 0
+    for _, petData in ipairs(pets) do
+        if type(petData) == "table" and #petData >= 2 then
+            local chance = tonumber(petData[2]) or 0
+            if chance > 0 then
+                totalWeight = totalWeight + chance
+            end
+        end
+    end
+    
+    -- If no valid weights, return random pet
+    if totalWeight <= 0 then
+        local randomIndex = math.random(1, #pets)
+        return pets[randomIndex] and pets[randomIndex][1] or "No Pets"
+    end
+    
+    -- Generate random number and select
+    local randomValue = math.random() * totalWeight
+    local cumulativeWeight = 0
+    
+    for _, petData in ipairs(pets) do
+        if type(petData) == "table" and #petData >= 2 then
+            local chance = tonumber(petData[2]) or 0
+            local petName = petData[1] or "Unknown"
+            cumulativeWeight = cumulativeWeight + chance
+            if randomValue <= cumulativeWeight then
+                return petName
+            end
+        end
+    end
+    
+    -- Fallback to random pet
+    local randomIndex = math.random(1, #pets)
+    return pets[randomIndex] and pets[randomIndex][1] or "Unknown"
+end
+
+-- ESP settings
+local espEnabled = true
+local truePetMap = {}
+local blockTypeEnabled = {}
+
+-- Initialize all block types as enabled by default
+for blockName in pairs(luckyBlockTable) do
+    blockTypeEnabled[blockName] = true
+end
+
+-- Function to check if a block type should be shown
+local function shouldShowBlock(blockName)
+    return espEnabled and (blockTypeEnabled[blockName] == true)
+end
+
+-- glitch effect - ONLY called when randomizing
+local function glitchLabelEffect(label)
+    coroutine.wrap(function()
+        local original = label.TextColor3
+        for i = 1, 2 do
+            label.TextColor3 = Color3.new(1, 0, 0)
+            task.wait(0.07)
+            label.TextColor3 = original
+            task.wait(0.07)
+        end
+    end)()
+end
+
+-- ESP apply for Lucky Blocks
+local function applyBlockESP(luckyBlockModel, petName, applyGlitch)
+    if not shouldShowBlock(luckyBlockModel.Name) then return end
+    
+    local existingLabel = luckyBlockModel:FindFirstChild("PetBillboard", true)
+    if existingLabel then existingLabel:Destroy() end
+    local existingHighlight = luckyBlockModel:FindFirstChild("ESPHighlight")
+    if existingHighlight then existingHighlight:Destroy() end
+
+    local basePart = luckyBlockModel:FindFirstChildWhichIsA("BasePart") or luckyBlockModel.PrimaryPart
+    if not basePart then 
+        for _, part in ipairs(luckyBlockModel:GetChildren()) do
+            if part:IsA("BasePart") then
+                basePart = part
+                break
+            end
+        end
+        if not basePart then return end
+    end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "PetBillboard"
+    billboard.Size = UDim2.new(0, 280, 0, 40)
+    billboard.StudsOffset = Vector3.new(0, 4.2, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = 450
+    billboard.Parent = basePart
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = luckyBlockModel.Name .. " | " .. petName
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.TextStrokeTransparency = 0.3
+    label.TextScaled = true
+    label.Font = Enum.Font.FredokaOne
+    label.TextSize = 12
+    label.Parent = billboard
+
+    if applyGlitch then
+        glitchLabelEffect(label)
+    end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.FillColor = Color3.fromRGB(0, 180, 255)
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    highlight.FillTransparency = 0.75
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Adornee = luckyBlockModel
+    highlight.Parent = luckyBlockModel
+end
+
+-- Remove ESP
+local function removeBlockESP(luckyBlockModel)
+    local label = luckyBlockModel:FindFirstChild("PetBillboard", true)
+    if label then label:Destroy() end
+    local highlight = luckyBlockModel:FindFirstChild("ESPHighlight")
+    if highlight then highlight:Destroy() end
+end
+
+-- Update ESP for a specific block
+local function updateBlockESP(luckyBlockModel, applyGlitch)
+    applyGlitch = applyGlitch or false
+    if shouldShowBlock(luckyBlockModel.Name) and truePetMap[luckyBlockModel] then
+        applyBlockESP(luckyBlockModel, truePetMap[luckyBlockModel], applyGlitch)
+    else
+        removeBlockESP(luckyBlockModel)
+    end
+end
+
+-- Collect nearby lucky blocks
+local function getPlayerLuckyBlocks(radius)
+    local blocks = {}
+    local char = player.Character or player.CharacterAdded:Wait()
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return blocks end
+
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        if obj:IsA("Model") and luckyBlockTable[obj.Name] then
+            local dist
+            local blockPosition
+            
+            if obj.PrimaryPart then
+                blockPosition = obj.PrimaryPart.Position
+            else
+                local firstPart = obj:FindFirstChildWhichIsA("BasePart")
+                if firstPart then
+                    blockPosition = firstPart.Position
+                else
+                    continue
+                end
+            end
+            
+            dist = (blockPosition - root.Position).Magnitude
+            if dist <= (radius or 60) then
+                table.insert(blocks, obj)
+            end
+        end
+    end
+    return blocks
+end
+
+-- Randomize manually with weighted chances
+local function randomizeNearbyBlocks()
+    local blocks = getPlayerLuckyBlocks(60)
+    
+    if #blocks == 0 then
+        print("No lucky blocks found nearby")
+        return
+    end
+    
+    for _, block in ipairs(blocks) do
+        local chosen = selectWeightedPet(block.Name)
+        truePetMap[block] = chosen
+        updateBlockESP(block, true)
+    end
+    
+    print("Randomized " .. #blocks .. " lucky blocks.")
+end
+
+local function flashEffect(button)
+    local originalColor = button.BackgroundColor3
+    for i = 1, 3 do
+        button.BackgroundColor3 = Color3.new(1, 1, 1)
+        task.wait(0.05)
+        button.BackgroundColor3 = originalColor
+        task.wait(0.05)
+    end
+end
+
+-- GUI Setup
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "BrainrotBlockGui"
+
+-- Black circle toggle button (MOVEABLE with WHITE OUTLINE)
+local toggleBtn = Instance.new("TextButton", screenGui)
+toggleBtn.Name = "ToggleButton"
+toggleBtn.Size = UDim2.new(0, 40, 0, 40)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+toggleBtn.Text = ""
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Font = Enum.Font.FredokaOne
+toggleBtn.TextSize = 20
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+
+-- WHITE OUTLINE for toggle button - THICKER and BRIGHTER
+local toggleBtnOutline = Instance.new("UIStroke", toggleBtn)
+toggleBtnOutline.Thickness = 3  -- Increased thickness for better visibility
+toggleBtnOutline.Color = Color3.new(1, 1, 1)  -- Pure white
+toggleBtnOutline.Transparency = 0  -- No transparency
+
+-- Main frame
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 280, 0, 320)
+frame.Position = UDim2.new(0, 60, 0, 10)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+frame.BorderSizePixel = 0
+frame.Visible = true
+
+-- Blue outline for frame
+local frameOutline = Instance.new("UIStroke", frame)
+frameOutline.Thickness = 2
+frameOutline.Color = Color3.fromRGB(60, 140, 255)
+
+-- rounded corners
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 8)
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 24)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "🎲 LUCKY BLOCK RANDOMIZER"
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 16
+title.TextColor3 = Color3.fromRGB(180, 220, 255)
+title.TextXAlignment = Enum.TextXAlignment.Center
+
+-- Randomize button
+local randomizeBtn = Instance.new("TextButton", frame)
+randomizeBtn.Size = UDim2.new(1, -20, 0, 30)
+randomizeBtn.Position = UDim2.new(0, 10, 0, 30)
+randomizeBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+randomizeBtn.Text = "RANDOMIZE"
+randomizeBtn.TextSize = 13
+randomizeBtn.Font = Enum.Font.FredokaOne
+randomizeBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", randomizeBtn).CornerRadius = UDim.new(0, 6)
+
+-- ESP toggle button
+local espToggleBtn = Instance.new("TextButton", frame)
+espToggleBtn.Size = UDim2.new(0.48, -5, 0, 26)
+espToggleBtn.Position = UDim2.new(0, 10, 0, 70)
+espToggleBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 160, 0) or Color3.fromRGB(160, 0, 0)
+espToggleBtn.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
+espToggleBtn.TextSize = 12
+espToggleBtn.Font = Enum.Font.FredokaOne
+espToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", espToggleBtn).CornerRadius = UDim.new(0, 6)
+
+-- Clear All button
+local clearAllBtn = Instance.new("TextButton", frame)
+clearAllBtn.Size = UDim2.new(0.48, -5, 0, 26)
+clearAllBtn.Position = UDim2.new(0.52, 0, 0, 70)
+clearAllBtn.BackgroundColor3 = Color3.fromRGB(160, 80, 0)
+clearAllBtn.Text = "CLEAR ALL"
+clearAllBtn.TextSize = 12
+clearAllBtn.Font = Enum.Font.FredokaOne
+clearAllBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", clearAllBtn).CornerRadius = UDim.new(0, 6)
+
+-- Select All button
+local selectAllBtn = Instance.new("TextButton", frame)
+selectAllBtn.Size = UDim2.new(0.48, -5, 0, 26)
+selectAllBtn.Position = UDim2.new(0, 10, 0, 105)
+selectAllBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 60)
+selectAllBtn.Text = "SELECT ALL"
+selectAllBtn.TextSize = 12
+selectAllBtn.Font = Enum.Font.FredokaOne
+selectAllBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", selectAllBtn).CornerRadius = UDim.new(0, 6)
+
+-- Filter container frame (SCROLLABLE)
+local filterContainer = Instance.new("Frame", frame)
+filterContainer.Name = "FilterContainer"
+filterContainer.Size = UDim2.new(1, -20, 0, 150)
+filterContainer.Position = UDim2.new(0, 10, 0, 140)
+filterContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+filterContainer.BorderSizePixel = 0
+Instance.new("UICorner", filterContainer).CornerRadius = UDim.new(0, 6)
+Instance.new("UIStroke", filterContainer).Color = Color3.fromRGB(80, 80, 100)
+
+-- Scrollable frame inside container
+local scrollFrame = Instance.new("ScrollingFrame", filterContainer)
+scrollFrame.Name = "ScrollFrame"
+scrollFrame.Size = UDim2.new(1, 0, 1, 0)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.BorderSizePixel = 0
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 140, 255)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+-- Status label
+local statusLabel = Instance.new("TextLabel", frame)
+statusLabel.Size = UDim2.new(1, -20, 0, 20)
+statusLabel.Position = UDim2.new(0, 10, 1, -25)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "◉ Ready"
+statusLabel.Font = Enum.Font.GothamBold
+statusLabel.TextSize = 11
+statusLabel.TextColor3 = Color3.fromRGB(180, 220, 255)
+statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+-- Function to create scrollable filter list
+local function createFilterList()
+    -- Clear existing buttons
+    for _, child in ipairs(scrollFrame:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+    
+    -- Create sorted list of block names
+    local blockNames = {}
+    for name in pairs(luckyBlockTable) do
+        table.insert(blockNames, name)
+    end
+    table.sort(blockNames)
+    
+    local buttonHeight = 22
+    local spacing = 3
+    local totalHeight = 0
+    
+    -- Create buttons for each block type
+    for i, blockName in ipairs(blockNames) do
+        local option = Instance.new("TextButton", scrollFrame)
+        option.Size = UDim2.new(1, -10, 0, buttonHeight)
+        option.Position = UDim2.new(0, 5, 0, totalHeight)
+        option.BackgroundColor3 = blockTypeEnabled[blockName] and Color3.fromRGB(0, 140, 60) or Color3.fromRGB(140, 0, 40)
+        option.Text = (blockTypeEnabled[blockName] and "✓ " or "✗ ") .. blockName
+        option.TextSize = 11
+        option.Font = Enum.Font.FredokaOne
+        option.TextColor3 = Color3.new(1, 1, 1)
+        option.TextXAlignment = Enum.TextXAlignment.Left
+        Instance.new("UICorner", option).CornerRadius = UDim.new(0, 4)
+        
+        option.MouseButton1Click:Connect(function()
+            blockTypeEnabled[blockName] = not blockTypeEnabled[blockName]
+            option.BackgroundColor3 = blockTypeEnabled[blockName] and Color3.fromRGB(0, 140, 60) or Color3.fromRGB(140, 0, 40)
+            option.Text = (blockTypeEnabled[blockName] and "✓ " or "✗ ") .. blockName
+            
+            -- Update ESP for this block type
+            local blocks = getPlayerLuckyBlocks(60)
+            for _, block in pairs(blocks) do
+                if block.Name == blockName then
+                    updateBlockESP(block, false)
+                end
+            end
+        end)
+        
+        totalHeight = totalHeight + buttonHeight + spacing
+    end
+    
+    -- Set canvas size for scrolling
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+end
+
+-- Create initial filter list
+createFilterList()
+
+-- Variables for randomization cooldown
+local isRandomizing = false
+local originalBtnText = "RANDOMIZE"
+local originalBtnColor = Color3.fromRGB(0, 100, 200)
+local disabledBtnColor = Color3.fromRGB(100, 100, 100)
+
+-- Function to disable/enable randomize button
+local function setRandomizeButtonEnabled(enabled)
+    randomizeBtn.Active = enabled
+    randomizeBtn.BackgroundColor3 = enabled and originalBtnColor or disabledBtnColor
+    randomizeBtn.Text = enabled and originalBtnText or "Please wait..."
+end
+
+-- Fixed countdown and randomize function
+local function countdownAndRandomize()
+    if isRandomizing then return end
+    
+    isRandomizing = true
+    setRandomizeButtonEnabled(false)
+    
+    -- Countdown from 10 to 1
+    for i = 10, 1, -1 do
+        randomizeBtn.Text = "Randomizing in: " .. i
+        task.wait(1)
+    end
+    
+    -- Perform randomization
+    randomizeNearbyBlocks()
+    flashEffect(randomizeBtn)
+    
+    -- Reset button to original state
+    randomizeBtn.Text = originalBtnText
+    setRandomizeButtonEnabled(true)
+    isRandomizing = false
+end
+
+-- Connect randomize button with cooldown prevention
+randomizeBtn.MouseButton1Click:Connect(function()
+    if not isRandomizing then
+        countdownAndRandomize()
+    end
+end)
+
+-- Other button event handlers
+espToggleBtn.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espToggleBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 160, 0) or Color3.fromRGB(160, 0, 0)
+    espToggleBtn.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
+    
+    local blocks = getPlayerLuckyBlocks(60)
+    for _, block in pairs(blocks) do
+        updateBlockESP(block, false)
+    end
+end)
+
+clearAllBtn.MouseButton1Click:Connect(function()
+    for blockName in pairs(blockTypeEnabled) do
+        blockTypeEnabled[blockName] = false
+    end
+    
+    local blocks = getPlayerLuckyBlocks(60)
+    for _, block in pairs(blocks) do
+        removeBlockESP(block)
+    end
+    
+    createFilterList()
+end)
+
+selectAllBtn.MouseButton1Click:Connect(function()
+    for blockName in pairs(blockTypeEnabled) do
+        blockTypeEnabled[blockName] = true
+    end
+    
+    local blocks = getPlayerLuckyBlocks(60)
+    for _, block in pairs(blocks) do
+        updateBlockESP(block, false)
+    end
+    
+    createFilterList()
+end)
+
+-- Toggle button functionality with visual feedback
+local guiVisible = true
+toggleBtn.MouseButton1Click:Connect(function()
+    guiVisible = not guiVisible
+    frame.Visible = guiVisible
+    
+    -- Visual feedback: change circle color when hiding/showing
+    if guiVisible then
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Black when visible
+        toggleBtnOutline.Color = Color3.new(1, 1, 1)  -- White outline
+    else
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)  -- Dark gray when hidden
+        toggleBtnOutline.Color = Color3.new(0.7, 0.7, 0.7)  -- Light gray outline when hidden
+    end
+end)
+
+-- DRAGGING FUNCTIONALITY FOR TOGGLE BUTTON
+local toggleDragging, toggleDragInput, toggleDragStart, toggleStartPos
+
+local function updateToggleDrag(input)
+    local delta = input.Position - toggleDragStart
+    toggleBtn.Position = UDim2.new(
+        toggleStartPos.X.Scale,
+        toggleStartPos.X.Offset + delta.X,
+        toggleStartPos.Y.Scale,
+        toggleStartPos.Y.Offset + delta.Y
+    )
+    -- Move frame along with toggle button
+    frame.Position = UDim2.new(
+        frame.Position.X.Scale,
+        frame.Position.X.Offset + delta.X,
+        frame.Position.Y.Scale,
+        frame.Position.Y.Offset + delta.Y
+    )
+end
+
+toggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        toggleDragging = true
+        toggleDragStart = input.Position
+        toggleStartPos = toggleBtn.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                toggleDragging = false
+            end
+        end)
+    end
+end)
+
+toggleBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        toggleDragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == toggleDragInput and toggleDragging then
+        updateToggleDrag(input)
+    end
+end)
+
+-- Dragging functionality for main frame
+local frameDragging, frameDragInput, frameDragStart, frameStartPos
+local function updateFrameDrag(input)
+    local delta = input.Position - frameDragStart
+    frame.Position = UDim2.new(
+        frameStartPos.X.Scale,
+        frameStartPos.X.Offset + delta.X,
+        frameStartPos.Y.Scale,
+        frameStartPos.Y.Offset + delta.Y
+    )
+    -- Move toggle button along with frame
+    toggleBtn.Position = UDim2.new(
+        toggleBtn.Position.X.Scale,
+        toggleBtn.Position.X.Offset + delta.X,
+        toggleBtn.Position.Y.Scale,
+        toggleBtn.Position.Y.Offset + delta.Y
+    )
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        frameDragging = true
+        frameDragStart = input.Position
+        frameStartPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                frameDragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        frameDragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    -- Handle both dragging systems
+    if input == toggleDragInput and toggleDragging then
+        updateToggleDrag(input)
+    elseif input == frameDragInput and frameDragging then
+        updateFrameDrag(input)
+    end
+end)
+
+-- Auto-apply ESP to nearby blocks when game loads
+task.wait(3)
+
+-- Continuous block detection
+while true do
+    local blocks = getPlayerLuckyBlocks(60)
+    for _, block in ipairs(blocks) do
+        if not truePetMap[block] then
+            local chosen = selectWeightedPet(block.Name)
+            truePetMap[block] = chosen
+            updateBlockESP(block, false)
+        else
+            updateBlockESP(block, false)
+        end
+    end
+    task.wait(1)
+end
