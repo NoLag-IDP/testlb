@@ -348,7 +348,7 @@ title.BackgroundTransparency = 1
 title.Text = "🎲 LUCKY BLOCK RANDOMIZER"
 title.Font = Enum.Font.FredokaOne
 title.TextSize = 16
-title.TextColor3 = Color3.fromRGB(180, 220, 255)
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.TextXAlignment = Enum.TextXAlignment.Center
 
 -- Randomize button
@@ -423,7 +423,7 @@ statusLabel.BackgroundTransparency = 1
 statusLabel.Text = "◉ Ready"
 statusLabel.Font = Enum.Font.GothamBold
 statusLabel.TextSize = 11
-statusLabel.TextColor3 = Color3.fromRGB(180, 220, 255)
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 statusLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 -- Function to create scrollable filter list
