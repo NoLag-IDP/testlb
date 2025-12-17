@@ -18,7 +18,78 @@ local luckyBlockTable = {
         {"Spaghetti Tualetti", 15},
         {"La Secret Combinasion", 9}
     },
-    -- ... (rest of your luckyBlockTable remains the same)
+    ["Mythic Lucky Block"] = {
+        {"Spioniro Golubiro", 37},
+        {"Tigrilini Watermelini", 30},
+        {"Zibra Zubra Zibralini", 20},
+        {"Carrotini Brainini", 10},
+        {"Bananito Bandito", 3}
+    },
+    ["Brainrot God Lucky Block"] = {
+        {"Tigroligre Frutonni", 54},
+        {"Orcalero Orcala", 30},
+        {"Bulbito Bandito Traktorito", 10},
+        {"Mastodontico Telepiedone", 5},
+        {"Pop Pop Sahur", 1}
+    },
+    ["Admin Lucky Block"] = {
+        {"Carloo", 28},
+        {"Alessio", 20},
+        {"Los Bombinitos", 15},
+        {"Crabbo Limonetta", 15},
+        {"Blackhole Goat", 25},
+        {"Guerriro Digitale", 20},
+        {"67", 15},
+        {"La Grande Combinasion", 9}
+    },
+    ["Taco Lucky Block"] = {
+        {"Chihuanini Taconini", 50.5},
+        {"Gattito Tacoto", 35},
+        {"Los Tipi Tacos", 10},
+        {"Quesadilla Crocodila", 3},
+        {"Burrito Bandito", 3},
+        {"Los Nooo My Hotspotsitos", 1}
+    },
+    ["Los Lucky Blocks"] = {
+        {"Los Bombinitos", 40},
+        {"Los Tungtungtungcitos", 25},
+        {"Los Orcalitos", 15},
+        {"Los Tipi Tacos", 10},
+        {"Los Tortus", 25},
+        {"Los Jobcitos", 20},
+        {"Los Combinasionas", 15},
+        {"Los 67", 9}
+    },
+    ["Los Taco Blocks"] = {
+        {"Los Chihuaninis", 75},
+        {"Los Gattitos", 15},
+        {"Los Cucurachas", 6},
+        {"Los Quesdilos", 3.5},
+        {"Los Burritos", 0.5}
+    },
+    ["Spooky Lucky Block"] = {
+        {"Mummy Ambalabu", 32.7},
+        {"Cappucino Clownino", 32.5},
+        {"Jackorilla", 19.5},
+        {"Pumpkini Spyderini", 9},
+        {"Trickolino", 3},
+        {"Telemorte", 20},
+        {"Los Spooky Combinasionas", 15},
+        {"La Casa Boo", 9}
+    },
+    ["Festive Lucky Block"] = {
+        {"Reinito Sleighito", 9},
+        {"La Ginger Sekolah", 15},
+        {"Chimnino", 20},
+        {"Los 25", 25},
+        {"Santa Hotspot", 10},
+        {"Triplito Tralaleritos", 25},
+        {"Pandanini Frostini", 30},
+        {"Chrismasmamat", 30.9}
+    },
+    ["Premium Festive Lucky Block"] = {
+        {"La Ginger Sekolah", 100}
+    }
 }
 -- ==== END OF CHANCE EDITING ====
 
